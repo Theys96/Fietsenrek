@@ -13,7 +13,8 @@ function checkRack(data, ch, queue) {
     ch.publish(fromServerExchange, data[0], new Buffer(JSON.stringify(["requestInfo", rackName, queue])));
     racks.push(rackName);
   } else {
-  	rackInfo[data[0]][0] = Date.now();
+    if (rackInfo[data[0]])
+  	 rackInfo[data[0]][0] = Date.now();
   }
   	
   spots[rackName] = data[1];
