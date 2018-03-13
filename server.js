@@ -10,13 +10,9 @@ var spots = {};
 function checkRack(data, ch, queue) {
   rackName = data[0];
   if (racks.indexOf(rackName) == -1) {
-    ch.publish(fromServerExchange, data[0], new Buffer(JSON.stringify(["requestInfo", rackName, queue])));
     racks.push(rackName);
-  } else {
-    if (rackInfo[data[0]])
-  	 rackInfo[data[0]][0] = Date.now();
   }
-  	
+  rackInfo[rackName] = [Date.now(), rackName, data[1].length];
   spots[rackName] = data[1];
 }
 
@@ -32,11 +28,6 @@ amqp.connect('amqp://localhost', function(err, conn) {
         switch(data[0]) {
           case "heartbeat":
             checkRack(data.slice(1), ch, q.queue);
-            break;
-
-          case "rackInfo":
-            rackInfo[data[1]] = data;
-            rackInfo[data[1]][0] = Date.now();
             break;
         }
       }, {noAck: true});
