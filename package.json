@@ -1,5 +1,8 @@
 {
   "name": "NodeMQ",
   "version": "0.1.0",
-  "description": "Testing project for RabbitMQ in NodeJS"
+  "description": "Testing project for RabbitMQ in NodeJS",
+  "dependencies": {
+    "amqplib": "^0.5.2"
+  }
 }
