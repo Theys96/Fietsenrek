@@ -16,10 +16,10 @@ public class App
 				| UnsupportedLookAndFeelException e) {
 			e.printStackTrace();
 		}
-    	if (args.length != 0 && args[0].equalsIgnoreCase("--gui")) {
-    		new GUI();
-    	} else if (args.length == 0) {
+    	if (args.length != 0 && args[0].equalsIgnoreCase("--cli")) {
     		new CLI();
+    	} else if (args.length == 0) {
+    		new GUI();
     	} else {
     		System.err.println("Unknown parameters");
     	}
