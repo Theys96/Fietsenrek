@@ -4,6 +4,8 @@ import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Observable;
+import java.util.Observer;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -14,8 +16,9 @@ import javax.swing.JProgressBar;
 import javax.swing.JTextField;
 
 import nl.rug.nc.bicycles.bicycleStand.HeartbeatRunnable;
+import nl.rug.nc.bicycles.bicycleStand.model.StandData;
 
-public class GUI extends JFrame implements ActionListener {
+public class GUI extends JFrame implements ActionListener, Observer {
 	
 	private static final long serialVersionUID = -8263279312626846365L;
 	private JTextField nameField = new JTextField(20);
@@ -24,7 +27,7 @@ public class GUI extends JFrame implements ActionListener {
 	private JButton toggleButton = new JButton("Toggle");
 	private JLabel freeLabel = new JLabel("0");
 	private JProgressBar freeSpotBar = new JProgressBar();
-	private int[] slotData = null;
+	private StandData data = null;
 	
 	public GUI() {
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -58,28 +61,15 @@ public class GUI extends JFrame implements ActionListener {
 	
 	public boolean validateForm() {
 		try {
-			return (Integer.valueOf(toggleField.getText()) <= Integer.valueOf(totalField.getText()));
+			return (Integer.valueOf(toggleField.getText()) < Integer.valueOf(totalField.getText())
+					&& Integer.valueOf(toggleField.getText()) >= 0);
 		} catch (NumberFormatException e) {
 			return false;
 		}
-		
 	}
 	
-	public String getRackName() {
-		return nameField.getText();
-	}
-	
-	public String getSlotDataJson() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("[");
-		for (int i = 0; i<slotData.length; i++) {
-			builder.append(slotData[i]);
-			if (i < slotData.length-1) {
-				builder.append(", ");
-			}
-		}
-		builder.append("]");
-		return builder.toString();
+	public StandData getModel() {
+		return data;
 	}
 	
 	@Override
@@ -88,22 +78,23 @@ public class GUI extends JFrame implements ActionListener {
 			JOptionPane.showMessageDialog(this, "Invalid value", "Error: invalid value", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
-		int max = Integer.valueOf(totalField.getText());
-		if (slotData==null) {
-			slotData = new int[max];
+		if (data==null) {
+			int max = Integer.valueOf(totalField.getText());
+			data = new StandData(nameField.getText(), max);
+			data.addObserver(this);
 			freeSpotBar.setMaximum(max);
+			totalField.setEnabled(false);
+			nameField.setEnabled(false);
 			new Thread(new HeartbeatRunnable(this)).start();
 		}
 		int slot = Integer.valueOf(toggleField.getText());
-		slotData[slot-1] = slotData[slot-1]==1? 0 : 1;
-		int count = 0;
-		for (int bit : slotData) {
-			count += bit==1? 1 : 0;
-		}
-		freeSpotBar.setValue(count);
-		freeLabel.setText(""+(max-count));
-		totalField.setEnabled(false);
-		nameField.setEnabled(false);
+		data.toggleSlot(slot);
+	}
+
+	@Override
+	public void update(Observable arg0, Object arg1) {
+		freeSpotBar.setValue(data.getFilledSlotCount());
+		freeLabel.setText(""+data.getFreeSlotCount());
 	}
 
 }

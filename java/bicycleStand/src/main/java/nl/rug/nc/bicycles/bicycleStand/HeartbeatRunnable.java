@@ -31,7 +31,7 @@ public class HeartbeatRunnable implements Runnable {
 		while (true) {
 			long startTime = System.currentTimeMillis();
 			try {
-				channel.basicPublish("fietsenrek_servers", "", null, ("[\"heartbeat\", \""+parent.getRackName()+"\", "+parent.getSlotDataJson()+"]").getBytes());
+				channel.basicPublish("fietsenrek_servers", "", null, ("[\"heartbeat\", \""+parent.getModel().getName()+"\", "+parent.getModel().getSlotDataJson()+"]").getBytes());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
