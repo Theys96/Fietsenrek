@@ -3,7 +3,8 @@ package nl.rug.nc.bicycles.bicycleStand;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
-import nl.rug.nc.bicycles.bicycleStand.gui.GUI;
+import nl.rug.nc.bicycles.bicycleStand.ui.CLI;
+import nl.rug.nc.bicycles.bicycleStand.ui.GUI;
 
 public class App 
 {
@@ -15,6 +16,12 @@ public class App
 				| UnsupportedLookAndFeelException e) {
 			e.printStackTrace();
 		}
-        new GUI();
+    	if (args.length != 0 && args[0].equalsIgnoreCase("--gui")) {
+    		new GUI();
+    	} else if (args.length == 0) {
+    		new CLI();
+    	} else {
+    		System.err.println("Unknown parameters");
+    	}
     }
 }

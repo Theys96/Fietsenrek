@@ -44,4 +44,8 @@ public class StandData extends Observable {
 		return name;
 	}
 	
+	public int getMaxSlot() {
+		return data.length-1;
+	}
+	
 }

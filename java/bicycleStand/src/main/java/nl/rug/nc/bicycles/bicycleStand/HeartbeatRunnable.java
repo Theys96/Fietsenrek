@@ -1,8 +1,6 @@
 package nl.rug.nc.bicycles.bicycleStand;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.logging.Logger;
 
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ConnectionFactory;
@@ -12,19 +10,19 @@ import com.rabbitmq.client.RecoveryListener;
 import com.rabbitmq.client.ShutdownListener;
 import com.rabbitmq.client.ShutdownSignalException;
 
-import nl.rug.nc.bicycles.bicycleStand.gui.GUI;
+import nl.rug.nc.bicycles.bicycleStand.ui.UI;
+import nl.rug.nc.bicycles.bicycleStand.ui.UI.MessageType;
 
 public class HeartbeatRunnable implements Runnable {
 	
-	private GUI parent;
+	private UI parent;
 	private Channel channel;
 	private RecoverableConnection connection;
-	private Logger logger = Logger.getLogger(this.getClass().toString());
 	private String[] connectionInfo;
 	private boolean running = true;
 	
-	public HeartbeatRunnable(GUI gui, String[] connectionInfo) {
-		parent = gui;
+	public HeartbeatRunnable(UI ui, String[] connectionInfo) {
+		parent = ui;
 		this.connectionInfo = connectionInfo;
 	}
 	
@@ -45,28 +43,28 @@ public class HeartbeatRunnable implements Runnable {
 					connection = (RecoverableConnection) factory.newConnection();
 					connected = true;
 				} catch (java.net.ConnectException ce) {
-					logger.warning("Could not connect to RabbitMQ server, retrying every 5 seconds...");
+					parent.log(MessageType.WARNING, "Could not connect to RabbitMQ server, retrying every 5 seconds...");
 					try {
 						Thread.sleep(5000);
 					} catch (InterruptedException ie) {
 						ie.printStackTrace();
 					}
 				} catch (java.net.UnknownHostException uhe) {
-					logger.severe("Host not found! Stopping!");
+					parent.log(MessageType.SEVERE, "Host not found! Stopping!");
 					running = false;
 					return;
 				} catch (com.rabbitmq.client.AuthenticationFailureException afe) {
-					logger.severe("Incorrect username/password for RabbitMQ. Stopping...");
+					parent.log(MessageType.SEVERE, "Incorrect username/password for RabbitMQ. Stopping...");
 					running = false;
 					return;
 				}
 			}
-			logger.info("Connected to RabbitMQ server.");
+			parent.log(MessageType.INFO, "Connected to RabbitMQ server.");
 			connection.addShutdownListener(new ShutdownListener() {
 
 				@Override
 				public void shutdownCompleted(ShutdownSignalException arg0) {
-					logger.warning("No connection to RabbitMQ server, retrying every 5 seconds...");
+					parent.log(MessageType.WARNING, "No connection to RabbitMQ server, retrying every 5 seconds...");
 				}
 				
 			});
@@ -74,12 +72,12 @@ public class HeartbeatRunnable implements Runnable {
 
 				@Override
 				public void handleRecovery(Recoverable arg0) {
-					logger.info("Connection recovered!");
+					parent.log(MessageType.INFO, "Connection recovered!");
 				}
 
 				@Override
 				public void handleRecoveryStarted(Recoverable arg0) {
-					logger.info("Starting automatic connection recovery...");
+					parent.log(MessageType.INFO, "Starting automatic connection recovery...");
 				}
 				
 			});

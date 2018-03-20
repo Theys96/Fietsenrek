@@ -1,4 +1,4 @@
-package nl.rug.nc.bicycles.bicycleStand.gui;
+package nl.rug.nc.bicycles.bicycleStand.ui;
 
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
@@ -20,27 +20,27 @@ import javax.swing.JTextField;
 import nl.rug.nc.bicycles.bicycleStand.HeartbeatRunnable;
 import nl.rug.nc.bicycles.bicycleStand.model.StandData;
 
-public class GUI extends JFrame implements ActionListener, Observer {
+public class GUI extends UI implements ActionListener, Observer {
 	
-	private static final long serialVersionUID = -8263279312626846365L;
 	private JTextField nameField = new JTextField(20);
 	private JTextField totalField = new JTextField("0");
 	private JTextField toggleField = new JTextField();
 	private JButton toggleButton = new JButton("Toggle");
 	private JLabel freeLabel = new JLabel("0");
 	private JProgressBar freeSpotBar = new JProgressBar();
-	private StandData data = null;
+	private JFrame guiFrame = new JFrame();
 	
 	public GUI() {
-		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setLogLevel(MessageType.WARNING);
+		guiFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		JPanel content = new JPanel();
 		content.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-		this.setContentPane(content);
-		this.getContentPane().setLayout(new BorderLayout());
+		guiFrame.setContentPane(content);
+		guiFrame.getContentPane().setLayout(new BorderLayout());
 		JPanel upperPanel = new JPanel();
 		upperPanel.setLayout(new BorderLayout());
 		upperPanel.add(nameField, BorderLayout.CENTER);
-		this.getContentPane().add(upperPanel, BorderLayout.NORTH);
+		guiFrame.getContentPane().add(upperPanel, BorderLayout.NORTH);
 		JPanel centerPanel = new JPanel();
 		centerPanel.setLayout(new GridLayout(2,0));
 		JPanel slotsPanel = new JPanel(new GridLayout(2,0));
@@ -50,7 +50,7 @@ public class GUI extends JFrame implements ActionListener, Observer {
 		slotsPanel.add(totalField);
 		centerPanel.add(slotsPanel);
 		centerPanel.add(freeSpotBar);
-		this.getContentPane().add(centerPanel, BorderLayout.CENTER);
+		guiFrame.getContentPane().add(centerPanel, BorderLayout.CENTER);
 		JPanel bottomPanel = new JPanel();
 		bottomPanel.setLayout(new GridLayout(0,3));
 		bottomPanel.add(new JLabel("Set: "));
@@ -58,10 +58,10 @@ public class GUI extends JFrame implements ActionListener, Observer {
 		bottomPanel.add(toggleButton);
 		toggleField.addActionListener(this);
 		toggleButton.addActionListener(this);
-		this.getContentPane().add(bottomPanel, BorderLayout.SOUTH);
-		this.pack();
-		this.setResizable(false);
-		this.setVisible(true);
+		guiFrame.getContentPane().add(bottomPanel, BorderLayout.SOUTH);
+		guiFrame.pack();
+		guiFrame.setResizable(false);
+		guiFrame.setVisible(true);
 	}
 	
 	public boolean validateForm() {
@@ -73,10 +73,6 @@ public class GUI extends JFrame implements ActionListener, Observer {
 		}
 	}
 	
-	public StandData getModel() {
-		return data;
-	}
-	
 	private String[] showConnectionDialog() {
 		JTextField ip = new JTextField(20), user= new JTextField(20);
 		JPasswordField pass = new JPasswordField(20);
@@ -85,7 +81,7 @@ public class GUI extends JFrame implements ActionListener, Observer {
 				"Username:", user,
 				"Password:", pass
 		};
-		int result = JOptionPane.showConfirmDialog(this, message, "Connection info...", JOptionPane.OK_CANCEL_OPTION);
+		int result = JOptionPane.showConfirmDialog(guiFrame, message, "Connection info...", JOptionPane.OK_CANCEL_OPTION);
 		if (result == JOptionPane.OK_OPTION) {
 			return new String[] {user.getText(), String.valueOf(pass.getPassword()), ip.getText()};
 		}
@@ -95,28 +91,34 @@ public class GUI extends JFrame implements ActionListener, Observer {
 	@Override
 	public void actionPerformed(ActionEvent ae) {
 		if (!validateForm()) {
-			JOptionPane.showMessageDialog(this, "Invalid value", "Error: invalid value", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(guiFrame, "Invalid value", "Error: invalid value", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
-		if (data==null) {
+		if (this.getModel()==null) {
 			String[] connectionInfo = showConnectionDialog();
 			if (connectionInfo==null) return;
 			int max = Integer.valueOf(totalField.getText());
-			data = new StandData(nameField.getText(), max);
+			StandData data = new StandData(nameField.getText(), max);
 			data.addObserver(this);
+			setModel(data);
 			freeSpotBar.setMaximum(max);
 			totalField.setEnabled(false);
 			nameField.setEnabled(false);
 			new Thread(new HeartbeatRunnable(this, connectionInfo)).start();
 		}
 		int slot = Integer.valueOf(toggleField.getText());
-		data.toggleSlot(slot);
+		getModel().toggleSlot(slot);
 	}
 
 	@Override
 	public void update(Observable arg0, Object arg1) {
-		freeSpotBar.setValue(data.getFilledSlotCount());
-		freeLabel.setText(""+data.getFreeSlotCount());
+		freeSpotBar.setValue(getModel().getFilledSlotCount());
+		freeLabel.setText(""+getModel().getFreeSlotCount());
+	}
+
+	@Override
+	public void showMessage(MessageType type, String message) {
+		JOptionPane.showMessageDialog(guiFrame, message, "", type.getJOptionPaneMessageType());
 	}
 
 }
