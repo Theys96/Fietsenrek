@@ -10,6 +10,7 @@ var mqExchange = "fietsenrek_servers";
 var mqIP;
 
 var api;
+var server;
 var port = 3000;
 
 var racks = [];
@@ -144,7 +145,7 @@ function startTimeout(freq) {
 function exit() {
 	console.log(" # Goodbye.");
 	mqConnection.close();
-	api.close();
+	server.close();
 	process.exit();
 }
 
@@ -219,6 +220,6 @@ function startRESTAPI() {
 		res.send(JSON.stringify(getList(), null, 3));
 	});
 
-	api.listen(port);
+	server = api.listen(port);
 	console.log(" # REST API started listening on port %d.", port);
 }
