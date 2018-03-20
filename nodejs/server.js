@@ -207,7 +207,7 @@ function startCommandLineInterface() {
 
 function startRESTAPI() {
 	api = express();
-	api.use(express.static(__dirname + "/html"));
+	api.use(express.static(__dirname + "/static"));
 
 	api.get("/", function (req, res) {
 		res.type('html');
