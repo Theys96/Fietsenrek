@@ -75,10 +75,12 @@ public class HeartbeatRunnable implements Runnable {
 	@Override
 	public void run() {
 		if (connection==null) initConnection();
-		while (connection.isOpen()) {
+		while (true) {
 			long startTime = System.currentTimeMillis();
 			try {
 				channel.basicPublish("fietsenrek_servers", "", null, ("[\"heartbeat\", \""+parent.getModel().getName()+"\", "+parent.getModel().getSlotDataJson()+"]").getBytes());
+			} catch (com.rabbitmq.client.AlreadyClosedException e) {
+				// Will retry every second
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
