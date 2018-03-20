@@ -1,6 +1,7 @@
 package nl.rug.nc.bicycles.bicycleStand;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.logging.Logger;
 
 import com.rabbitmq.client.Channel;
@@ -29,9 +30,13 @@ public class HeartbeatRunnable implements Runnable {
 	
 	private void initConnection() {
 		ConnectionFactory factory = new ConnectionFactory();
-		factory.setUsername(connectionInfo[0]);
-		factory.setPassword(connectionInfo[1]);
-		factory.setHost(connectionInfo[2]);
+		if (!connectionInfo[0].equals("")) factory.setUsername(connectionInfo[0]);
+		if (!connectionInfo[1].equals("")) factory.setPassword(connectionInfo[1]);
+		if (!connectionInfo[2].equals("")) {
+			factory.setHost(connectionInfo[2]);
+		} else {
+			factory.setHost("localhost");
+		}
 		factory.setAutomaticRecoveryEnabled(true);
 		try {
 			boolean connected = false;
