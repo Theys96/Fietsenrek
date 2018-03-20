@@ -1,5 +1,6 @@
 var amqp = require('amqplib/callback_api');
 var prompt = require('prompt');
+var express = require('express');
 
 var mqServer = "localhost";
 var mqConnection;
@@ -7,6 +8,9 @@ var mqUsername;
 var mqPassword;
 var mqExchange = "fietsenrek_servers";
 var mqIP;
+
+var api;
+var port = 3000;
 
 var racks = [];
 var rackInfo = {};
@@ -29,6 +33,11 @@ function boot() {
     			description: "Enter RabbitMQ password",
     			hidden: true
       		},
+      		port: {
+      			description: "Enter REST API port",
+      			message: "Enter a number.",
+      			type: "integer"
+      		},
       		freq: {
       			description: "Enter heartbeat frequency in seconds",
       			message: "Enter a number.",
@@ -41,7 +50,7 @@ function boot() {
   			console.log(" # Please try again, shutting down.");
   			process.exit();
   		}
-  		//prompt.stop();
+  		port = result.port == 0 ? port : result.port;
   		startTimeout(result.freq == 0 ? 5 : result.freq);
   		mqServer = result.ip == "" ? mqServer : result.ip;
   		mqUsername = result.username == "" ? null : result.username;
@@ -59,6 +68,10 @@ function connect(callback) {
 	conString += '@' + mqServer;
 	amqp.connect(conString, function (err, conn) {
 		if (err) {
+			if (callback) {
+				console.log(" # Note: not yet connected to RabbitMQ.");
+				callback();
+			}
 			setTimeout(connect, 5000);
 		} else {
 			console.log(" # Succesfully connected to RabbitMQ at %s", mqServer);
@@ -128,25 +141,50 @@ function startTimeout(freq) {
 	}, freq*1000);
 }
 
+function exit() {
+	console.log(" # Goodbye.");
+	mqConnection.close();
+	api.close();
+	process.exit();
+}
 
 
 
 /*** INTERFACE ***/
 
-function printList() {
-	if (racks.length == 0) {
-		console.log(" # There are no racks right now.");
-		return;
-	}
+function getList() {
+	list = [];
 	time = Date.now();
 	for (i = 0; i < racks.length; i++) {
 		info = rackInfo[racks[i]];
-		console.log(" # ", i, "\t", info[1], "\tsize: ", info[2], "\tlast heartbeat: ", time - info[0], " ms ago");
-		console.log(spots[racks[i]]);
+		list[i] = {
+			name: info[1],
+			size: info[2],
+			last_heartbeat: time - info[0],
+			spots: spots[racks[i]]
+		}
+	}
+	return list;
+}
+
+function printList() {
+	list = getList();
+	if (list.length == 0) {
+		console.log(" # There are no racks right now.");
+		return;
+	}
+	for (i = 0; i < list.length; i++) {
+		console.log(" # ", i, "\t", list[i].name, "\tsize: ", list[i].size, "\tlast heartbeat: ", list[i].last_heartbeat, " ms ago");
+		console.log(list[i].spots);
 	}
 }
 
 function startInterface() {
+	startRESTAPI();
+	startCommandLineInterface();
+}
+
+function startCommandLineInterface() {
 	var stdin = process.openStdin();
 	stdin.addListener("data", function (d) {
 		string = d.toString().trim();
@@ -155,9 +193,7 @@ function startInterface() {
 				printList();
 				break;
 			case "exit":
-				console.log(" # Goodbye.");
-				mqConnection.close();
-				process.exit();
+				exit();
 				break;
 			default:
 				console.log(" # That command was not understood. Supported commands:");
@@ -167,4 +203,22 @@ function startInterface() {
 		console.log(" # Enter a command.");
 	});
 	console.log(" # Enter a command.");
+}
+
+function startRESTAPI() {
+	api = express();
+	api.use(express.static(__dirname + "/static"));
+
+	api.get("/", function (req, res) {
+		res.type('html');
+		res.sendFile('index.html');
+	});
+
+	api.get(["/list", "/list.json"], function (req, res) {
+		res.type('json');
+		res.send(JSON.stringify(getList(), null, 3));
+	});
+
+	api.listen(port);
+	console.log(" # REST API started listening on port %d.", port);
 }

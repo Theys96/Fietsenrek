@@ -4,6 +4,7 @@
   "description": "Testing project for RabbitMQ in NodeJS",
   "dependencies": {
     "amqplib": "^0.5.2",
+    "express": "^4.16.3",
     "prompt": "^1.0.0"
   }
 }
