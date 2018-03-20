@@ -1,11 +1,80 @@
 var amqp = require('amqplib/callback_api');
+var prompt = require('prompt');
 
-var toServerExchange = "fietsenrek_servers";
-var fromServerExchange = "fietsenrek_racks";
+var mqConnection;
+var mqExchange = "fietsenrek_servers";
+var mqIP;
 
 var racks = [];
 var rackInfo = {};
 var spots = {};
+
+boot();
+
+function boot() {
+	console.log("Welcome.");
+	prompt.start();
+	prompt.get({
+    	properties: {
+    		name: {
+    			description: 'Enter your name'
+      		},
+      		password: {
+        		hidden: true
+      		}
+    	}
+  	}, function (err, result) {
+  		console.log(err);
+  		console.log(result);
+  	});
+	//connect();
+}
+
+function connect() {
+	amqp.connect('amqp://localhost', function (err, conn) {
+		if (err) {
+			console.log("Connecting to RabbitMQ failed.");
+			setTimeout(connect, 5000);
+		} else {
+			mqConnection = conn;
+			init();
+		}
+	});
+}
+
+function init() {
+	console.log("Initiaizing");
+	mqConnection.on("close", function() {
+		console.log("Notice: RabbitMQ disconnected, going back to connecting.");
+		connect();
+	})
+	console.log("Creating channel");
+	mqConnection.createChannel(function (err, ch) {
+		if (err) {
+			console.log("Something went wrong trying to create a channel!");
+			console.log("Going back to connecting.");
+			connect();
+		} else {
+			ch.assertExchange(mqExchange, 'fanout', { durable: false });
+			ch.assertQueue('', { exclusive: true }, function (err, q) {
+				ch.bindQueue(q.queue, mqExchange, '');
+				ch.consume(q.queue, function (msg) {
+					receiveMessage(msg);
+				}, { noAck: true });
+			});
+		}
+	});
+	console.log("Server started.");
+}
+
+function receiveMessage(msg) {
+	data = JSON.parse(msg.content);
+	switch (data[0]) {
+	case "heartbeat":
+		checkRack(data.slice(1), ch, q.queue);
+		break;
+	}
+}
 
 function checkRack(data, ch, queue) {
 	rackName = data[0];
@@ -15,25 +84,6 @@ function checkRack(data, ch, queue) {
 	rackInfo[rackName] = [Date.now(), rackName, data[1].length];
 	spots[rackName] = data[1];
 }
-
-amqp.connect('amqp://localhost', function (err, conn) {
-	conn.createChannel(function (err, ch) {
-
-		ch.assertExchange(toServerExchange, 'fanout', { durable: false });
-
-		ch.assertQueue('', { exclusive: true }, function (err, q) {
-			ch.bindQueue(q.queue, toServerExchange, '');
-			ch.consume(q.queue, function (msg) {
-				data = JSON.parse(msg.content);
-				switch (data[0]) {
-				case "heartbeat":
-					checkRack(data.slice(1), ch, q.queue);
-					break;
-				}
-			}, { noAck: true });
-		});
-	});
-});
 
 setInterval(function () {
 	for (i = 0; i < racks.length; i++) {
@@ -47,20 +97,29 @@ setInterval(function () {
 	}
 }, 5000);
 
+
+
+
+/*** INTERFACE ***/
+
+function printList() {
+	if (racks.length == 0) {
+		console.log(" # There are no racks right now.");
+		return;
+	}
+	for (i = 0; i < racks.length; i++) {
+		info = rackInfo[racks[i]];
+		console.log(" # ", i, "\t", info[1], "\tsize=", info[2], "\tlast_heartbeat=", info[0]);
+		console.log(spots[racks[i]]);
+	}
+}
+
 var stdin = process.openStdin();
 stdin.addListener("data", function (d) {
 	string = d.toString().trim();
 	switch (string) {
-	case "list":
-		if (racks.length == 0) {
-			console.log(" # There are no racks right now.");
+		case "list":
+			printList();
 			break;
-		}
-		for (i = 0; i < racks.length; i++) {
-			info = rackInfo[racks[i]];
-			console.log(" # ", i, "\t", info[1], "\tsize=", info[2], "\tlast_heartbeat=", info[0]);
-			console.log(spots[racks[i]]);
-		}
-		break;
 	}
 });
