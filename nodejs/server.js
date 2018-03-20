@@ -3,6 +3,8 @@ var prompt = require('prompt');
 
 var mqServer = "localhost";
 var mqConnection;
+var mqUsername;
+var mqPassword;
 var mqExchange = "fietsenrek_servers";
 var mqIP;
 
@@ -18,7 +20,7 @@ function boot() {
 	prompt.get({
     	properties: {
     		ip: {
-    			description: "Enter the RabbitMQ server"
+    			description: "Enter the RabbitMQ server",
       		},
       		username: {
     			description: "Enter RabbitMQ username"
@@ -29,6 +31,7 @@ function boot() {
       		},
       		freq: {
       			description: "Enter heartbeat frequency in seconds",
+      			message: "Enter a number.",
       			type: "integer"
       		}
     	}
@@ -41,24 +44,31 @@ function boot() {
   		//prompt.stop();
   		startTimeout(result.freq == 0 ? 5 : result.freq);
   		mqServer = result.ip == "" ? mqServer : result.ip;
-  		console.log(" # Will now try to connect to %s", 'amqp://' + mqServer);
-  		connect();
+  		mqUsername = result.username == "" ? null : result.username;
+  		mqPassword = result.password == "" ? null : result.password;
+  		console.log(" # Will now try to connect to RabbitMQ at %s", mqServer);
+  		connect(startInterface);
   	});
 }
 
-function connect() {
-	amqp.connect('amqp://rekkie:rekkie@' + mqServer, function (err, conn) {
+function connect(callback) {
+	conString = "amqp://";
+	if (mqUsername) {
+		conString += mqUsername + ":" + mqPassword;
+	}
+	conString += '@' + mqServer;
+	amqp.connect(conString, function (err, conn) {
 		if (err) {
 			setTimeout(connect, 5000);
 		} else {
-			console.log(" # Succesfully connected to RabbitMQ at %s", 'amqp://' + mqServer);
+			console.log(" # Succesfully connected to RabbitMQ at %s", mqServer);
 			mqConnection = conn;
-			init();
+			init(callback);
 		}
 	});
 }
 
-function init() {
+function init(callback) {
 	console.log(" # Initializing.");
 	mqConnection.on("close", function() {
 		console.log(" # RabbitMQ disconnected, going back to connecting.");
@@ -81,7 +91,9 @@ function init() {
 		}
 	});
 	console.log(" # Server started.");
-	startInterface();
+	if (callback) {
+		callback();
+	}
 }
 
 function receiveMessage(ch, q, msg) {
