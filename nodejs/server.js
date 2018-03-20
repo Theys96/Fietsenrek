@@ -1,5 +1,6 @@
 var amqp = require('amqplib/callback_api');
 var prompt = require('prompt');
+var express = require('express');
 
 var mqServer = "localhost";
 var mqConnection;
@@ -59,6 +60,10 @@ function connect(callback) {
 	conString += '@' + mqServer;
 	amqp.connect(conString, function (err, conn) {
 		if (err) {
+			if (callback) {
+				console.log(" # Note: not yet connected to RabbitMQ.");
+				callback();
+			}
 			setTimeout(connect, 5000);
 		} else {
 			console.log(" # Succesfully connected to RabbitMQ at %s", mqServer);
