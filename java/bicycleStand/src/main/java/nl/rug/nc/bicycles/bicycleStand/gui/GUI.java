@@ -13,6 +13,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPasswordField;
 import javax.swing.JProgressBar;
 import javax.swing.JTextField;
 
@@ -76,6 +77,21 @@ public class GUI extends JFrame implements ActionListener, Observer {
 		return data;
 	}
 	
+	private String[] showConnectionDialog() {
+		JTextField ip = new JTextField(20), user= new JTextField(20);
+		JPasswordField pass = new JPasswordField(20);
+		Object[] message = {
+				"IP:", ip,
+				"Username:", user,
+				"Password:", pass
+		};
+		int result = JOptionPane.showConfirmDialog(this, message, "Connection info...", JOptionPane.OK_CANCEL_OPTION);
+		if (result == JOptionPane.OK_OPTION) {
+			return new String[] {user.getText(), String.valueOf(pass.getPassword()), ip.getText()};
+		}
+		return null;
+	}
+	
 	@Override
 	public void actionPerformed(ActionEvent ae) {
 		if (!validateForm()) {
@@ -83,13 +99,15 @@ public class GUI extends JFrame implements ActionListener, Observer {
 			return;
 		}
 		if (data==null) {
+			String[] connectionInfo = showConnectionDialog();
+			if (connectionInfo==null) return;
 			int max = Integer.valueOf(totalField.getText());
 			data = new StandData(nameField.getText(), max);
 			data.addObserver(this);
 			freeSpotBar.setMaximum(max);
 			totalField.setEnabled(false);
 			nameField.setEnabled(false);
-			new Thread(new HeartbeatRunnable(this)).start();
+			new Thread(new HeartbeatRunnable(this, connectionInfo)).start();
 		}
 		int slot = Integer.valueOf(toggleField.getText());
 		data.toggleSlot(slot);

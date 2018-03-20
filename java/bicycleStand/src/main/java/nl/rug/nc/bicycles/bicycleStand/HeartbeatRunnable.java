@@ -19,14 +19,19 @@ public class HeartbeatRunnable implements Runnable {
 	private Channel channel;
 	private RecoverableConnection connection;
 	private Logger logger = Logger.getLogger(this.getClass().toString());
+	private String[] connectionInfo;
+	private boolean running = true;
 	
-	public HeartbeatRunnable(GUI gui) {
+	public HeartbeatRunnable(GUI gui, String[] connectionInfo) {
 		parent = gui;
+		this.connectionInfo = connectionInfo;
 	}
 	
 	private void initConnection() {
 		ConnectionFactory factory = new ConnectionFactory();
-		factory.setHost("localhost");
+		factory.setUsername(connectionInfo[0]);
+		factory.setPassword(connectionInfo[1]);
+		factory.setHost(connectionInfo[2]);
 		factory.setAutomaticRecoveryEnabled(true);
 		try {
 			boolean connected = false;
@@ -41,6 +46,14 @@ public class HeartbeatRunnable implements Runnable {
 					} catch (InterruptedException ie) {
 						ie.printStackTrace();
 					}
+				} catch (java.net.UnknownHostException uhe) {
+					logger.severe("Host not found! Stopping!");
+					running = false;
+					return;
+				} catch (com.rabbitmq.client.AuthenticationFailureException afe) {
+					logger.severe("Incorrect username/password for RabbitMQ. Stopping...");
+					running = false;
+					return;
 				}
 			}
 			logger.info("Connected to RabbitMQ server.");
@@ -75,7 +88,7 @@ public class HeartbeatRunnable implements Runnable {
 	@Override
 	public void run() {
 		if (connection==null) initConnection();
-		while (true) {
+		while (running) {
 			long startTime = System.currentTimeMillis();
 			try {
 				channel.basicPublish("fietsenrek_servers", "", null, ("[\"heartbeat\", \""+parent.getModel().getName()+"\", "+parent.getModel().getSlotDataJson()+"]").getBytes());
@@ -90,6 +103,7 @@ public class HeartbeatRunnable implements Runnable {
 				ie.printStackTrace();
 			}
 		}
+		System.exit(1);
 	}
 
 }
