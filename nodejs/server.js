@@ -1,6 +1,7 @@
 var amqp = require('amqplib/callback_api');
 var prompt = require('prompt');
 
+var mqServer = "localhost";
 var mqConnection;
 var mqExchange = "fietsenrek_servers";
 var mqIP;
@@ -12,30 +13,45 @@ var spots = {};
 boot();
 
 function boot() {
-	console.log("Welcome.");
+	console.log(" # Welcome.");
 	prompt.start();
 	prompt.get({
     	properties: {
-    		name: {
-    			description: 'Enter your name'
+    		ip: {
+    			description: "Enter the RabbitMQ server"
+      		},
+      		username: {
+    			description: "Enter RabbitMQ username"
       		},
       		password: {
-        		hidden: true
+    			description: "Enter RabbitMQ password",
+    			hidden: true
+      		},
+      		freq: {
+      			description: "Enter heartbeat frequency in seconds",
+      			type: "integer"
       		}
     	}
   	}, function (err, result) {
-  		console.log(err);
-  		console.log(result);
+  		if (err) {
+  			console.log("\n # Something went wrong while entering startup information.");
+  			console.log(" # Please try again, shutting down.");
+  			process.exit();
+  		}
+  		//prompt.stop();
+  		startTimeout(result.freq == 0 ? 5 : result.freq);
+  		mqServer = result.ip == "" ? mqServer : result.ip;
+  		console.log(" # Will now try to connect to %s", 'amqp://' + mqServer);
+  		connect();
   	});
-	//connect();
 }
 
 function connect() {
-	amqp.connect('amqp://localhost', function (err, conn) {
+	amqp.connect('amqp://rekkie:rekkie@' + mqServer, function (err, conn) {
 		if (err) {
-			console.log("Connecting to RabbitMQ failed.");
 			setTimeout(connect, 5000);
 		} else {
+			console.log(" # Succesfully connected to RabbitMQ at %s", 'amqp://' + mqServer);
 			mqConnection = conn;
 			init();
 		}
@@ -43,31 +59,32 @@ function connect() {
 }
 
 function init() {
-	console.log("Initiaizing");
+	console.log(" # Initializing.");
 	mqConnection.on("close", function() {
-		console.log("Notice: RabbitMQ disconnected, going back to connecting.");
+		console.log(" # RabbitMQ disconnected, going back to connecting.");
 		connect();
 	})
-	console.log("Creating channel");
+	console.log(" # Creating channel.");
 	mqConnection.createChannel(function (err, ch) {
 		if (err) {
-			console.log("Something went wrong trying to create a channel!");
-			console.log("Going back to connecting.");
+			console.log(" # Something went wrong trying to create a channel!");
+			console.log(" # Going back to connecting.");
 			connect();
 		} else {
 			ch.assertExchange(mqExchange, 'fanout', { durable: false });
 			ch.assertQueue('', { exclusive: true }, function (err, q) {
 				ch.bindQueue(q.queue, mqExchange, '');
 				ch.consume(q.queue, function (msg) {
-					receiveMessage(msg);
+					receiveMessage(ch, q, msg);
 				}, { noAck: true });
 			});
 		}
 	});
-	console.log("Server started.");
+	console.log(" # Server started.");
+	startInterface();
 }
 
-function receiveMessage(msg) {
+function receiveMessage(ch, q, msg) {
 	data = JSON.parse(msg.content);
 	switch (data[0]) {
 	case "heartbeat":
@@ -85,17 +102,19 @@ function checkRack(data, ch, queue) {
 	spots[rackName] = data[1];
 }
 
-setInterval(function () {
-	for (i = 0; i < racks.length; i++) {
-		rack = racks[i];
-		if (rackInfo[rack][0] + 5000 < Date.now()) {
-			console.log(" # Rack \"%s\" has been removed.", rackInfo[rack][1]);
-			rackInfo[rack] = null;
-			spots[rack] = null;
-			racks.splice(i, 1);
+function startTimeout(freq) {
+	setInterval(function () {
+		for (i = 0; i < racks.length; i++) {
+			rack = racks[i];
+			if (rackInfo[rack][0] + 5000 < Date.now()) {
+				console.log(" # Rack \"%s\" has been removed.", rackInfo[rack][1]);
+				rackInfo[rack] = null;
+				spots[rack] = null;
+				racks.splice(i, 1);
+			}
 		}
-	}
-}, 5000);
+	}, freq*1000);
+}
 
 
 
@@ -107,19 +126,33 @@ function printList() {
 		console.log(" # There are no racks right now.");
 		return;
 	}
+	time = Date.now();
 	for (i = 0; i < racks.length; i++) {
 		info = rackInfo[racks[i]];
-		console.log(" # ", i, "\t", info[1], "\tsize=", info[2], "\tlast_heartbeat=", info[0]);
+		console.log(" # ", i, "\t", info[1], "\tsize: ", info[2], "\tlast heartbeat: ", time - info[0], " ms ago");
 		console.log(spots[racks[i]]);
 	}
 }
 
-var stdin = process.openStdin();
-stdin.addListener("data", function (d) {
-	string = d.toString().trim();
-	switch (string) {
-		case "list":
-			printList();
-			break;
-	}
-});
+function startInterface() {
+	var stdin = process.openStdin();
+	stdin.addListener("data", function (d) {
+		string = d.toString().trim();
+		switch (string) {
+			case "list":
+				printList();
+				break;
+			case "exit":
+				console.log(" # Goodbye.");
+				mqConnection.close();
+				process.exit();
+				break;
+			default:
+				console.log(" # That command was not understood. Supported commands:");
+				console.log("\tlist\texit");
+				break;
+		}
+		console.log(" # Enter a command.");
+	});
+	console.log(" # Enter a command.");
+}
