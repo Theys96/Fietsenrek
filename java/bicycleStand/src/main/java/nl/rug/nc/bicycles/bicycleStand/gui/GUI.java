@@ -7,6 +7,7 @@ import java.awt.event.ActionListener;
 import java.util.Observable;
 import java.util.Observer;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -31,6 +32,9 @@ public class GUI extends JFrame implements ActionListener, Observer {
 	
 	public GUI() {
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		JPanel content = new JPanel();
+		content.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+		this.setContentPane(content);
 		this.getContentPane().setLayout(new BorderLayout());
 		JPanel upperHalf = new JPanel();
 		upperHalf.setLayout(new BorderLayout());
@@ -48,7 +52,7 @@ public class GUI extends JFrame implements ActionListener, Observer {
 		this.getContentPane().add(lowerHalf, BorderLayout.CENTER);
 		JPanel bottomHalf = new JPanel();
 		bottomHalf.setLayout(new GridLayout(0,3));
-		bottomHalf.add(new JLabel("Set "));
+		bottomHalf.add(new JLabel("Set: "));
 		bottomHalf.add(toggleField);
 		bottomHalf.add(toggleButton);
 		toggleField.addActionListener(this);
