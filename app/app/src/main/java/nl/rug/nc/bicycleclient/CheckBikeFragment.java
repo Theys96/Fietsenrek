@@ -102,7 +102,6 @@ public class CheckBikeFragment extends Fragment {
                 if (time == 0) result.setText("There is no bicycle parked in this spot."+getCheckedString());
                 else if (time == -1) result.setText("This spot has been reserved."+getCheckedString());
                 else result.setText(String.format("This bicycle has been parked for %s."+getCheckedString(), DateUtils.formatElapsedTime(time/1000)));
-                result.setVisibility(View.VISIBLE);
             }
 
         });
