@@ -25,7 +25,7 @@ function update() {
 			list.append("<div class='col-3'><p>status: " + status + "</p></div>");
 			list.append("<div class='col-7'></div>"); // Filler
 			for (j = 0; j < racks[i].spots.length; j++) {
-				list.append('<div style="background-color: ' + (racks[i].spots[j] ? "salmon" : "lightgreen") + '" class="col-1 spot">');
+				list.append('<div style="background-color: ' + (racks[i].spots[j] > 0 ? "salmon" : "lightgreen") + '" class="col-1 spot">' + (racks[i].spots[j] > 0 ? racks[i].spots[j] : "") + '</div>');
 			}
 			div.append(list);
 			listElement.append(div);
