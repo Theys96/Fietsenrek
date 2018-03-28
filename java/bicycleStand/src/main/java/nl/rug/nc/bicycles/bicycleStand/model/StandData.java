@@ -1,12 +1,17 @@
 package nl.rug.nc.bicycles.bicycleStand.model;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Observable;
+import java.util.Random;
 import java.util.function.LongSupplier;
 
 public class StandData extends Observable {
 	
 	private long[] data;
 	private String name;
+	private Map<Integer, Integer> lockCodes = new HashMap<>();
+	private Random random = new Random();
 	
 	public enum SlotState {
 		EMPTY(() -> 0),
@@ -27,6 +32,12 @@ public class StandData extends Observable {
 	public StandData(String name, int slots) {
 		data = new long[slots];
 		this.name = name;
+	}
+	
+	public int lockSlot(int slot) {
+		int code = random.nextInt(8999)+1001;
+		lockCodes.put(slot, code);
+		return code;
 	}
 	
 	public String getSlotDataJson() {
@@ -51,8 +62,17 @@ public class StandData extends Observable {
 		builder.append("]");
 		return builder.toString();
 	}
+	
+	public boolean isLocked(int slot) {
+		return lockCodes.containsKey(slot);
+	}
+	
+	public boolean checkUnlockCode(int slot, int code) {
+		return lockCodes.containsKey(slot) && lockCodes.get(slot) == code;
+	}
 
 	public void setSlot(int slot, SlotState state) {
+		lockCodes.remove(slot);
 		synchronized (data) {
 			data[slot] = state.getValue();
 		}
@@ -83,7 +103,7 @@ public class StandData extends Observable {
 		synchronized (data) {
 			int total = 0;
 			for (int i=0; i<data.length; i++) {
-				if (data[i]>=1) total++;
+				if (data[i]!=0) total++;
 			}
 			return total;
 		}

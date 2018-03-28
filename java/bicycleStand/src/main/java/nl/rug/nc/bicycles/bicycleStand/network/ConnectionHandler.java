@@ -23,24 +23,16 @@ public class ConnectionHandler implements Runnable {
 		try {
 			ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
 			ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
-			DataRequest request = (DataRequest) ois.readObject();
-			Object returnValue;
-			switch (request.getRequestType()) {
-				case SLOT_TIME:
-					oos.writeLong(model.getSlotTime(request.getSlot()));
-					break;
-				case SLOT_RESERVE:
-					if (model.getSlot(request.getSlot()) == SlotState.EMPTY) {
-						model.setSlot(request.getSlot(), SlotState.RESERVED);
-						returnValue = true;
-					} else {
-						returnValue = false;
-					}
-					break;
+			int slot = ois.readInt();
+			int code = -1;
+			if (model.getSlot(slot) == SlotState.EMPTY) {
+				model.setSlot(slot, SlotState.RESERVED);
+				code = model.lockSlot(slot);
 			}
+			oos.writeInt(code);
 			oos.close();
 			ois.close();
-		} catch (IOException | ClassNotFoundException e) {
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}

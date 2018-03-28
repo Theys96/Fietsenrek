@@ -28,7 +28,20 @@ public class CLI extends UI {
 				try {
 					int slot = Integer.valueOf(command[1]);
 					String newState = command[2];
-					getModel().setSlot(slot, SlotState.valueOf(newState));
+					if (getModel().isLocked(slot)) {
+						try {
+							int code = Integer.valueOf(prompt("Unlock code: "));
+							if (getModel().checkUnlockCode(slot, code)) {
+								getModel().setSlot(slot, SlotState.valueOf(newState));
+							} else {
+								System.out.println("Incorrect code!");
+							}
+						} catch (NumberFormatException nfe) {
+							System.out.println("Unlock code needs to be numeric.");
+						}
+					} else {
+						getModel().setSlot(slot, SlotState.valueOf(newState));
+					}
 				} catch (Exception e) {
 					printParseError("set <slot (0-"+getModel().getMaxSlot()+")> <EMPTY | FILLED | RESERVED>");
 				}

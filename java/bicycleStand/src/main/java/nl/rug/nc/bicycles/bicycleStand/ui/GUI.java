@@ -19,6 +19,7 @@ import javax.swing.JTextField;
 
 import nl.rug.nc.bicycles.bicycleStand.HeartbeatRunnable;
 import nl.rug.nc.bicycles.bicycleStand.model.StandData;
+import nl.rug.nc.bicycles.bicycleStand.model.StandData.SlotState;
 import nl.rug.nc.bicycles.bicycleStand.network.SocketHandler;
 
 public class GUI extends UI implements ActionListener, Observer {
@@ -109,7 +110,20 @@ public class GUI extends UI implements ActionListener, Observer {
 			new Thread(new SocketHandler(this)).start();
 		}
 		int slot = Integer.valueOf(toggleField.getText());
-		getModel().toggleSlot(slot);
+		if (getModel().isLocked(slot)) {
+			try {
+				int code = Integer.valueOf(JOptionPane.showInputDialog(guiFrame, "Input unlock code", "Please enter you unlock code: ", JOptionPane.QUESTION_MESSAGE));
+				if (getModel().checkUnlockCode(slot, code)) {
+					getModel().setSlot(slot, SlotState.EMPTY);
+				} else {
+					showMessage(MessageType.WARNING, "Incorrect unlock code!");
+				}
+			} catch (NumberFormatException nfe) {
+				showMessage(MessageType.WARNING, "Unlock codes should be numeric.");
+			}
+		} else {
+			getModel().toggleSlot(slot);
+		}
 	}
 
 	@Override
