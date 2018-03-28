@@ -5,6 +5,8 @@ import java.util.logging.Logger;
 
 import nl.rug.nc.bicycles.bicycleStand.HeartbeatRunnable;
 import nl.rug.nc.bicycles.bicycleStand.model.StandData;
+import nl.rug.nc.bicycles.bicycleStand.model.StandData.SlotState;
+import nl.rug.nc.bicycles.bicycleStand.network.SocketHandler;
 
 public class CLI extends UI {
 
@@ -25,10 +27,10 @@ public class CLI extends UI {
 			case "set":
 				try {
 					int slot = Integer.valueOf(command[1]);
-					int newState = Integer.valueOf(command[2]);
-					getModel().setSlot(slot, newState);
+					String newState = command[2];
+					getModel().setSlot(slot, SlotState.valueOf(newState));
 				} catch (Exception e) {
-					printParseError("set <slot (0-"+getModel().getMaxSlot()+")> <state>");
+					printParseError("set <slot (0-"+getModel().getMaxSlot()+")> <EMPTY | FILLED | RESERVED>");
 				}
 				break;
 			case "toggle":
@@ -71,6 +73,7 @@ public class CLI extends UI {
 		String user = prompt("Username: ");
 		String pass = promptPassword("Password: ");
 		new Thread(new HeartbeatRunnable(this, new String[] {user, pass, host})).start();
+		new Thread(new SocketHandler(this)).start();
 	}
 	
 	private String promptPassword(String prompt) {

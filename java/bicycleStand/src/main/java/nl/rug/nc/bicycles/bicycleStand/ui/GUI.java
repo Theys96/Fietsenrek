@@ -19,6 +19,7 @@ import javax.swing.JTextField;
 
 import nl.rug.nc.bicycles.bicycleStand.HeartbeatRunnable;
 import nl.rug.nc.bicycles.bicycleStand.model.StandData;
+import nl.rug.nc.bicycles.bicycleStand.network.SocketHandler;
 
 public class GUI extends UI implements ActionListener, Observer {
 	
@@ -105,6 +106,7 @@ public class GUI extends UI implements ActionListener, Observer {
 			totalField.setEnabled(false);
 			nameField.setEnabled(false);
 			new Thread(new HeartbeatRunnable(this, connectionInfo)).start();
+			new Thread(new SocketHandler(this)).start();
 		}
 		int slot = Integer.valueOf(toggleField.getText());
 		getModel().toggleSlot(slot);

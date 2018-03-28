@@ -10,6 +10,7 @@ import com.rabbitmq.client.RecoveryListener;
 import com.rabbitmq.client.ShutdownListener;
 import com.rabbitmq.client.ShutdownSignalException;
 
+import nl.rug.nc.bicycles.bicycleStand.network.IpHelper;
 import nl.rug.nc.bicycles.bicycleStand.ui.UI;
 import nl.rug.nc.bicycles.bicycleStand.ui.UI.MessageType;
 
@@ -20,6 +21,7 @@ public class HeartbeatRunnable implements Runnable {
 	private RecoverableConnection connection;
 	private String[] connectionInfo;
 	private boolean running = true;
+	private String ip = IpHelper.getExternalIP();
 	
 	public HeartbeatRunnable(UI ui, String[] connectionInfo) {
 		parent = ui;
@@ -94,7 +96,7 @@ public class HeartbeatRunnable implements Runnable {
 		while (running) {
 			long startTime = System.currentTimeMillis();
 			try {
-				channel.basicPublish("fietsenrek_servers", "", null, ("[\"heartbeat\", \""+parent.getModel().getName()+"\", "+parent.getModel().getSlotDataJson()+"]").getBytes());
+				channel.basicPublish("fietsenrek_servers", "", null, ("[\"heartbeat\", \""+parent.getModel().getName()+"\", "+parent.getModel().getSlotDataJson()+", \""+ip+"\"]").getBytes());
 			} catch (com.rabbitmq.client.AlreadyClosedException e) {
 				// Will retry every second
 			} catch (IOException e) {
