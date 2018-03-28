@@ -5,6 +5,23 @@ $(function() {
 	update();
 });
 
+function lead0(n) {
+	return n < 10 ? "0"+n : n;
+}
+
+function ms2time(ms) {
+	var s = Math.floor(ms/1000);
+	var d = Math.floor(s / (60*60*24)); s -= d*(60*60*24);
+	var h = Math.floor(s / (60*60)); s -= h*(60*60);
+	var m = Math.floor(s / 60); s -= m*60;
+	if (d > 0)
+		return d + " days, " + h + ":" + lead0(m) + ":" + lead0(s);
+	else if (h > 0)
+		return h + ":" + lead0(m) + ":" + lead0(s);
+	else
+		return m + ":" + lead0(s);
+}
+
 function update() {
 	$.getJSON('/list', function (racks) {
 		listElement.html("");
@@ -25,7 +42,9 @@ function update() {
 			list.append("<div class='col-3'><p>status: " + status + "</p></div>");
 			list.append("<div class='col-7'></div>"); // Filler
 			for (j = 0; j < racks[i].spots.length; j++) {
-				list.append('<div style="background-color: ' + (racks[i].spots[j] > 0 ? "salmon" : "lightgreen") + '" class="col-1 spot">' + (racks[i].spots[j] > 0 ? racks[i].spots[j] : "") + '</div>');
+				color = racks[i].spots[j] > 0 ? "salmon" : (racks[i].spots[j] < 0 ? "steelblue" : "lightgreen");
+				content = racks[i].spots[j] > 0 ? ms2time(racks[i].spots[j]) : "";
+				list.append('<div style="background-color: ' + color + '" class="col-1 spot">' + content + '</div>');
 			}
 			div.append(list);
 			listElement.append(div);

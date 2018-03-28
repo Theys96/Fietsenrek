@@ -124,7 +124,7 @@ function checkRack(data, ch, queue) {
 	if (racks.indexOf(rackName) == -1) {
 		racks.push(rackName);
 	}
-	rackInfo[rackName] = [Date.now(), rackName, data[1].length];
+	rackInfo[rackName] = [Date.now(), rackName, data[1].length, data[2]];
 	spots[rackName] = data[1];
 }
 
@@ -162,6 +162,7 @@ function getList() {
 			name: info[1],
 			size: info[2],
 			last_heartbeat: time - info[0],
+			ip: info[3],
 			spots: spots[racks[i]]
 		}
 	}
@@ -178,6 +179,7 @@ function getByName(name) {
 				name: info[1],
 				size: info[2],
 				last_heartbeat: time - info[0],
+				ip: info[3],
 				spots: spots[racks[i]]
 			}
 		}
