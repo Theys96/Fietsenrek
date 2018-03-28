@@ -22,4 +22,4 @@ function update() {
 	});
 }
 
-// setInterval(update, 500);
+setInterval(update, 5000);
