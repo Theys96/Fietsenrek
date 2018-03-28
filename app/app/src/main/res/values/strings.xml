@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Bicycle client</string>
+    <string name="title_home">Home</string>
+    <string name="title_reserve">Reserve a spot</string>
+    <string name="title_check_time">Check parking time</string>
+    <string name="welcome">Welcome to the connectedCity bicycle app.</string>
+    <string name="select_rack">Please select a rack: </string>
+    <string name="select_slot">Please input your slot number: </string>
+</resources>
