@@ -168,6 +168,23 @@ function getList() {
 	return list;
 }
 
+function getByName(name) {
+	var rek = null;
+	time = Date.now();
+	for (i = 0; i < racks.length; i++) {
+		info = rackInfo[racks[i]];
+		if (info[1] == name) {
+			rek = {
+				name: info[1],
+				size: info[2],
+				last_heartbeat: time - info[0],
+				spots: spots[racks[i]]
+			}
+		}
+	}
+	return rek;
+}
+
 function printList() {
 	list = getList();
 	if (list.length == 0) {
@@ -215,9 +232,24 @@ function startRESTAPI() {
 		res.sendFile('index.html');
 	});
 
-	api.get(["/list", "/list.json"], function (req, res) {
+	api.get(["/list", "/list"], function (req, res) {
 		res.type('json');
 		res.send(JSON.stringify(getList(), null, 3));
+	});
+
+	api.param('name', function (req, res, next, name) {
+		res.type('json');
+		var rek = getByName(name);
+		if (rek == null) {
+			rek = "Err: rack '" +name+ "' not found";
+			res.status(404);
+		}
+		res.send(JSON.stringify(rek, null, 3));
+		next();
+	});
+
+	api.get(["/rack/:name", "/rack/:name"], function (req, res) {
+		// This function will probably not be reached.
 	});
 
 	server = api.listen(port);
