@@ -232,7 +232,7 @@ function startRESTAPI() {
 		res.sendFile('index.html');
 	});
 
-	api.get(["/list", "/list.json"], function (req, res) {
+	api.get(["/list", "/list"], function (req, res) {
 		res.type('json');
 		res.send(JSON.stringify(getList(), null, 3));
 	});
@@ -248,7 +248,7 @@ function startRESTAPI() {
 		next();
 	});
 
-	api.get(["/rack/:name", "/rack/:name.json"], function (req, res) {
+	api.get(["/rack/:name", "/rack/:name"], function (req, res) {
 		// This function will probably not be reached.
 	});
 
