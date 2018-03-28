@@ -28,18 +28,7 @@ public class CLI extends UI {
 				try {
 					int slot = Integer.valueOf(command[1]);
 					String newState = command[2];
-					if (getModel().isLocked(slot)) {
-						try {
-							int code = Integer.valueOf(prompt("Unlock code: "));
-							if (getModel().checkUnlockCode(slot, code)) {
-								getModel().setSlot(slot, SlotState.valueOf(newState));
-							} else {
-								System.out.println("Incorrect code!");
-							}
-						} catch (NumberFormatException nfe) {
-							System.out.println("Unlock code needs to be numeric.");
-						}
-					} else {
+					if (!getModel().isLocked(slot) || requestUnlock(slot)) {
 						getModel().setSlot(slot, SlotState.valueOf(newState));
 					}
 				} catch (Exception e) {
@@ -49,7 +38,9 @@ public class CLI extends UI {
 			case "toggle":
 				try {
 					int slot = Integer.valueOf(command[1]);
-					getModel().toggleSlot(slot);
+					if (!getModel().isLocked(slot) || requestUnlock(slot)) {
+						getModel().toggleSlot(slot);
+					}
 				} catch (Exception e) {
 					printParseError("toggle <slot (0-"+getModel().getMaxSlot()+")>");
 				}
@@ -64,6 +55,20 @@ public class CLI extends UI {
 		}
 		System.out.println("Goodbye!");
 		System.exit(0);
+	}
+	
+	private boolean requestUnlock(int slot) {
+		try {
+			int code = Integer.valueOf(prompt("Unlock code: "));
+			if (getModel().checkUnlockCode(slot, code)) {
+				return true;
+			} else {
+				System.out.println("Incorrect code!");
+			}
+		} catch (NumberFormatException nfe) {
+			System.out.println("Unlock code needs to be numeric.");
+		}
+		return false;
 	}
 	
 	private void printParseError(String usage) {
