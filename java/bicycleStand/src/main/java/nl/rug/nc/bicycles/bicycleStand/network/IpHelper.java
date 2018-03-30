@@ -5,8 +5,17 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 
+/**
+ * Checks and returns the external IP Address of the network that the bicycle stand is running on.
+ *
+ */
 public class IpHelper {
 	
+	/**
+	 * Reads and returns the external IP address of the network that the bicycle stand is running on.
+	 * 
+	 * @return ip The external IP address.
+	 */
 	public static String getExternalIP() {
 		String ip = null;
 	    

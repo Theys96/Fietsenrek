@@ -8,16 +8,29 @@ import java.net.Socket;
 import nl.rug.nc.bicycles.bicycleStand.model.StandData;
 import nl.rug.nc.bicycles.bicycleStand.model.StandData.SlotState;
 
+/**
+ * Handles the generation a lock code for a slot number given by a client.
+ * It returns the code to the client.
+ */
 public class ConnectionHandler implements Runnable {
 	
 	private Socket socket;
 	private StandData model;
 	
+	/**
+	 * Initializes the Socket and the StandData.
+	 * 
+	 * @param socket The socket of the bicycle stand.
+	 * @param model The StandData of the bicycle stand.
+	 */
 	public ConnectionHandler(Socket socket, StandData model) {
-		this.socket=socket;
+		this.socket = socket;
 		this.model = model;
 	}
 	
+	/* (non-Javadoc)
+	 * @see java.lang.Runnable#run()
+	 */
 	@Override
 	public void run() {
 		try {

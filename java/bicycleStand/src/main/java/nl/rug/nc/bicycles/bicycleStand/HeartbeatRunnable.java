@@ -14,6 +14,12 @@ import nl.rug.nc.bicycles.bicycleStand.network.IpHelper;
 import nl.rug.nc.bicycles.bicycleStand.ui.UI;
 import nl.rug.nc.bicycles.bicycleStand.ui.UI.MessageType;
 
+/**
+ * This class handles the connection to the RabbitMQ server and
+ * the creation and publishing of the Heartbeat messages of the bicycle stand.
+ * A Heartbeat message contains the bicycle stand name, slot occupation data and IP address.
+ *
+ */
 public class HeartbeatRunnable implements Runnable {
 	
 	private UI parent;
@@ -28,6 +34,11 @@ public class HeartbeatRunnable implements Runnable {
 		this.connectionInfo = connectionInfo;
 	}
 	
+	
+	/**
+	 * This method tries to initialize a connection with the RabbitMQ server. 
+	 * It also takes care of the appropriate error handling.
+	 */
 	private void initConnection() {
 		ConnectionFactory factory = new ConnectionFactory();
 		if (!connectionInfo[0].equals("")) factory.setUsername(connectionInfo[0]);
@@ -90,6 +101,9 @@ public class HeartbeatRunnable implements Runnable {
 		}
 	}
 	
+	/* (non-Javadoc)
+	 * @see java.lang.Runnable#run()
+	 */
 	@Override
 	public void run() {
 		if (connection==null) initConnection();

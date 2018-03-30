@@ -6,6 +6,11 @@ import javax.swing.UnsupportedLookAndFeelException;
 import nl.rug.nc.bicycles.bicycleStand.ui.CLI;
 import nl.rug.nc.bicycles.bicycleStand.ui.GUI;
 
+/**
+ * Opens a Command-line interface or a Graphical User Interface for the bicycle stand
+ * depending on the given command line argument.
+ *
+ */
 public class App 
 {
     public static void main( String[] args )

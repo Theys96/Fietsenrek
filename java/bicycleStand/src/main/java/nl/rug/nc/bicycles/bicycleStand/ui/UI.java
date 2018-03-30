@@ -7,11 +7,19 @@ import javax.swing.JOptionPane;
 
 import nl.rug.nc.bicycles.bicycleStand.model.StandData;
 
+/**
+ * This abstract class contains the message handling methods for all User Interfaces of bicycle stands.
+ *
+ */
 public abstract class UI {
 	
 	private StandData data = null;
 	private int logLevel = 0;
 	
+	/**
+	 * Specifies the the different message types: INFO, WARNING and SEVERE.
+	 *
+	 */
 	public enum MessageType {
 		INFO(0, Level.INFO, JOptionPane.INFORMATION_MESSAGE),
 		WARNING(1, Level.WARNING, JOptionPane.WARNING_MESSAGE),
@@ -60,6 +68,13 @@ public abstract class UI {
 		data = model;
 	}
 	
+	/**
+	 * Shows a message to the user if its log level is higher or equal to the current log level.
+	 * Logs the other messages.
+	 * 
+	 * @param type The message type.
+	 * @param message The message String.
+	 */
 	public void log(MessageType type, String message) {
 		if (type.getLogLevel() >= this.getLogLevel()) {
 			showMessage(type, message);
