@@ -6,4 +6,5 @@
     <string name="welcome">Welcome to the connectedCity bicycle app.</string>
     <string name="select_rack">Please select a rack: </string>
     <string name="select_slot">Please input your slot number: </string>
+    <string name="debug_ip">ian-n551jq</string>
 </resources>

@@ -74,6 +74,7 @@ public class CheckBikeFragment extends Fragment {
                 Log.e("JSON error", je.getMessage());
             }
         }
+        requestParkTime.setEnabled(true);
         if (response.length() == 0) {
             Snackbar.make(rootView, "No bicycle racks currently online.", Snackbar.LENGTH_LONG).show();
             rackSpinner.setEnabled(false);
@@ -108,7 +109,7 @@ public class CheckBikeFragment extends Fragment {
     }
 
     private void requestDataFromApi() {
-        JsonArrayRequest arrayRequest = new JsonArrayRequest("http://ian-n551jq:3000/list", new Response.Listener<JSONArray>() {
+        JsonArrayRequest arrayRequest = new JsonArrayRequest(String.format("http://%s:3000/list", getString(R.string.debug_ip)), new Response.Listener<JSONArray>() {
             @Override
             public void onResponse(JSONArray response) {
                 CheckBikeFragment.this.jsonRequestCallback(response);
@@ -136,6 +137,7 @@ public class CheckBikeFragment extends Fragment {
                 } else {
                     Snackbar.make(rootView, "Incorrect slot number. Your slot number should be between 1 and " + sizeData.get(rackSpinner.getSelectedItem()) + " (inclusive).", Snackbar.LENGTH_LONG).show();
                 }
+                requestDataFromApi();
             }
         });
         numberInput.setOnEditorActionListener(new TextView.OnEditorActionListener() {

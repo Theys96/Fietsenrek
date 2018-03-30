@@ -70,6 +70,7 @@ public class ReserveSpotFragment extends Fragment implements Callbackable<Intege
                 Log.e("JSON error", je.getMessage());
             }
         }
+        requestParkTime.setEnabled(true);
         if (response.length() == 0) {
             Snackbar.make(rootView, "No bicycle racks currently online.", Snackbar.LENGTH_LONG).show();
             rackSpinner.setEnabled(false);
@@ -81,7 +82,7 @@ public class ReserveSpotFragment extends Fragment implements Callbackable<Intege
     }
 
     private void requestDataFromApi() {
-        JsonArrayRequest arrayRequest = new JsonArrayRequest("http://ian-n551jq:3000/list", new Response.Listener<JSONArray>() {
+        JsonArrayRequest arrayRequest = new JsonArrayRequest(String.format("http://%s:3000/list", getString(R.string.debug_ip)), new Response.Listener<JSONArray>() {
             @Override
             public void onResponse(JSONArray response) {
                 ReserveSpotFragment.this.jsonRequestCallback(response);
@@ -105,7 +106,7 @@ public class ReserveSpotFragment extends Fragment implements Callbackable<Intege
                 int slot = Integer.valueOf(slotSpinner.getSelectedItem().toString())-1;
                 String ip = ipData.get(rackSpinner.getSelectedItem().toString());
 
-                new Thread(new SpotReserver(slot, "ian-n551jq", ReserveSpotFragment.this)).start();
+                new Thread(new SpotReserver(slot, getString(R.string.debug_ip), ReserveSpotFragment.this)).start();
             }
         });
         rackSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
