@@ -1,9 +1,14 @@
 package nl.rug.nc.bicycles.bicycleStand.model;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.function.LongSupplier;
 
 public class StandData extends Observable {
@@ -11,7 +16,9 @@ public class StandData extends Observable {
 	private long[] data;
 	private String name;
 	private Map<Integer, Integer> lockCodes = new HashMap<>();
+	private Map<Integer, Long> reservedTimes = new HashMap<>();
 	private Random random = new Random();
+	private ScheduledExecutorService reservedRemoverService = Executors.newSingleThreadScheduledExecutor();
 	
 	public enum SlotState {
 		EMPTY(() -> 0),
@@ -32,12 +39,32 @@ public class StandData extends Observable {
 	public StandData(String name, int slots) {
 		data = new long[slots];
 		this.name = name;
+		reservedRemoverService.scheduleAtFixedRate(new Runnable() {
+			@Override
+			public void run() {
+				Map<Integer, Long> times = StandData.this.getReservedTimes();
+				Set<Integer> toRemove = new HashSet<>();
+				synchronized (times) {
+					for (Integer key : times.keySet()) {
+						if (times.get(key)+5400000 < System.currentTimeMillis()) toRemove.add(key);
+					}
+					for (Integer key: toRemove) {
+						times.remove(key);
+						setSlot(key, SlotState.EMPTY);
+					}
+				}
+			}
+		}, 0, 60, TimeUnit.SECONDS);
 	}
 	
 	public int lockSlot(int slot) {
 		int code = random.nextInt(8999)+1001;
 		lockCodes.put(slot, code);
 		return code;
+	}
+	
+	private Map<Integer, Long> getReservedTimes() {
+		return reservedTimes;
 	}
 	
 	public String getSlotDataJson() {
@@ -73,6 +100,10 @@ public class StandData extends Observable {
 
 	public void setSlot(int slot, SlotState state) {
 		lockCodes.remove(slot);
+		synchronized (reservedTimes) {
+			reservedTimes.remove(slot);
+			if (state == SlotState.RESERVED) reservedTimes.put(slot, System.currentTimeMillis());
+		}
 		synchronized (data) {
 			data[slot] = state.getValue();
 		}
