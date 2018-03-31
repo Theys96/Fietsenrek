@@ -22,6 +22,12 @@ import nl.rug.nc.bicycles.bicycleStand.model.StandData;
 import nl.rug.nc.bicycles.bicycleStand.model.StandData.SlotState;
 import nl.rug.nc.bicycles.bicycleStand.network.SocketHandler;
 
+/**
+ * This class provides a Graphical User Interface for a bicycle stand.
+ * It offers ways to edit or display bicycle stand data using Graphical widgets such as buttons and fields.
+ * It also provides part of the input validation.
+ *
+ */
 public class GUI extends UI implements ActionListener, Observer {
 	
 	private JTextField nameField = new JTextField(20);
@@ -32,6 +38,10 @@ public class GUI extends UI implements ActionListener, Observer {
 	private JProgressBar freeSpotBar = new JProgressBar();
 	private JFrame guiFrame = new JFrame();
 	
+	/**
+	 * Constructs all the graphical widgets required 
+	 * to edit and display all bicycle stand data.
+	 */
 	public GUI() {
 		setLogLevel(MessageType.WARNING);
 		guiFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -66,6 +76,11 @@ public class GUI extends UI implements ActionListener, Observer {
 		guiFrame.setVisible(true);
 	}
 	
+	/**
+	 * Checks whether the value of toggleField is within legal limits.
+	 * 
+	 * @return Boolean True if within legal limits, False otherwise.
+	 */
 	public boolean validateForm() {
 		try {
 			return (Integer.valueOf(toggleField.getText()) < Integer.valueOf(totalField.getText())
@@ -75,6 +90,12 @@ public class GUI extends UI implements ActionListener, Observer {
 		}
 	}
 	
+	/**
+	 * Opens a new dialog in which the user can enter its IP Address,
+	 * username and password.
+	 * 
+	 * @return A String Array containing the entered information.
+	 */
 	private String[] showConnectionDialog() {
 		JTextField ip = new JTextField(20), user= new JTextField(20);
 		JPasswordField pass = new JPasswordField(20);
@@ -90,6 +111,9 @@ public class GUI extends UI implements ActionListener, Observer {
 		return null;
 	}
 	
+	/* (non-Javadoc)
+	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+	 */
 	@Override
 	public void actionPerformed(ActionEvent ae) {
 		if (!validateForm()) {
@@ -126,12 +150,18 @@ public class GUI extends UI implements ActionListener, Observer {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see java.util.Observer#update(java.util.Observable, java.lang.Object)
+	 */
 	@Override
 	public void update(Observable arg0, Object arg1) {
 		freeSpotBar.setValue(getModel().getFilledSlotCount());
 		freeLabel.setText(""+getModel().getFreeSlotCount());
 	}
 
+	/* (non-Javadoc)
+	 * @see nl.rug.nc.bicycles.bicycleStand.ui.UI#showMessage(nl.rug.nc.bicycles.bicycleStand.ui.UI.MessageType, java.lang.String)
+	 */
 	@Override
 	public void showMessage(MessageType type, String message) {
 		JOptionPane.showMessageDialog(guiFrame, message, "", type.getJOptionPaneMessageType());

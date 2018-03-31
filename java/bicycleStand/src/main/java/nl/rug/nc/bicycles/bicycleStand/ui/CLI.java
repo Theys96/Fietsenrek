@@ -8,10 +8,25 @@ import nl.rug.nc.bicycles.bicycleStand.model.StandData;
 import nl.rug.nc.bicycles.bicycleStand.model.StandData.SlotState;
 import nl.rug.nc.bicycles.bicycleStand.network.SocketHandler;
 
+/**
+ * This class provides a Command Line Interface for a bicycle stand.
+ * It offers ways to edit or display bicycle stand data using Command line commands.
+ *
+ */
 public class CLI extends UI {
 
 	private Console console = System.console();
 	
+	/**
+	 * First checks whether the program is run from a terminal and initializes bicycle stand data.
+	 * Then waits for user input. Possible commands are:
+	 * <p><ul>
+	 * <li> set - Sets a given slot number to a given SlotState.
+	 * <li> toggle - Toggles a given slot from EMPTY to FILLED or vice versa.
+	 * <li> list - Prints the current data for each slot.
+	 * <li> exit - Exits the program.
+	 * </ul><p>
+	 */
 	public CLI() {
 		if (console==null) {
 			System.err.println("Please run this program from a terminal.");
@@ -57,6 +72,13 @@ public class CLI extends UI {
 		System.exit(0);
 	}
 	
+	/**
+	 * Request an unlock code from the user for a given slot.
+	 * Checks whether it is the correct code.
+	 * 
+	 * @param slot The slot that needs to be unlocked
+	 * @return Boolean True if the code is correct, False otherwise.
+	 */
 	private boolean requestUnlock(int slot) {
 		try {
 			int code = Integer.valueOf(prompt("Unlock code: "));
@@ -75,6 +97,9 @@ public class CLI extends UI {
 		System.out.println("Error parsing command. Usage: " + usage);
 	}
 	
+	/**
+	 * Prompts for bicycle stand data and initializes a bicycle stand with that data.
+	 */
 	public void init() {
 		String name = prompt("Stand name: ");
 		int slots = 0;
@@ -94,19 +119,41 @@ public class CLI extends UI {
 		new Thread(new SocketHandler(this)).start();
 	}
 	
+	/**
+	 * Reads and returns the password entered by the user.
+	 * 
+	 * @param prompt The password prompt.
+	 * @return The password.
+	 */
 	private String promptPassword(String prompt) {
 		return String.valueOf(console.readPassword(prompt));
 	}
 	
+	/**
+	 * Prompts for user input and returns a default String if no input is given.
+	 * 
+	 * @param prompt The prompt message.
+	 * @param defaultString The default input.
+	 * @return Returns the user input if it was given, default input otherwise.
+	 */
 	private String prompt(String prompt, String defaultString) {
 		String input = prompt(prompt);
 		return input.equals("")? defaultString : input;
 	}
 	
+	/**
+	 * Reads and returns the user input to a prompt.
+	 * 
+	 * @param prompt The prompt message.
+	 * @return The user input.
+	 */
 	private String prompt(String prompt) {
 		return console.readLine(prompt);
 	}
 	
+	/* (non-Javadoc)
+	 * @see nl.rug.nc.bicycles.bicycleStand.ui.UI#showMessage(nl.rug.nc.bicycles.bicycleStand.ui.UI.MessageType, java.lang.String)
+	 */
 	@Override
 	protected void showMessage(MessageType type, String message) {
 		Logger.getLogger("CLI").log(type.getLoggerEquivalent(), message);
