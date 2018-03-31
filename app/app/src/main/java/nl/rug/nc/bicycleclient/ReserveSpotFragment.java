@@ -35,7 +35,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-
+/**
+ * This subclass of Fragment provides the user interface where the users can choose a bicycle
+ * stand and a slot number and reserve that slot if it is empty.
+ */
 public class ReserveSpotFragment extends Fragment implements Callbackable<Integer> {
 
     private View rootView;
@@ -50,6 +53,12 @@ public class ReserveSpotFragment extends Fragment implements Callbackable<Intege
         // Required empty public constructor
     }
 
+    /**
+     * Stores the data of all connected bicycle stands from the JSONArray.
+     * It updates the user interface depending on whether any connected bicycle stands were found.
+     *
+     * @param response A JSONArray that contains the bicycle stand data.
+     */
     private void jsonRequestCallback(JSONArray response) {
         rootView.findViewById(R.id.progressBar).setVisibility(rootView.GONE);
         sizeData.clear();
@@ -81,6 +90,9 @@ public class ReserveSpotFragment extends Fragment implements Callbackable<Intege
         rackSpinner.setAdapter(spinnerAdapter);
     }
 
+    /**
+     * Requests the data of all connected bicycle stands for the API.
+     */
     private void requestDataFromApi() {
         JsonArrayRequest arrayRequest = new JsonArrayRequest(String.format("http://%s:3000/list", getString(R.string.debug_ip)), new Response.Listener<JSONArray>() {
             @Override
@@ -99,6 +111,9 @@ public class ReserveSpotFragment extends Fragment implements Callbackable<Intege
         jsonRequestQueue.add(arrayRequest);
     }
 
+    /**
+     * Sets action listeners for the 'Reserve a spot' button and the slot number input field.
+     */
     private void setListeners() {
         requestParkTime.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -129,6 +144,9 @@ public class ReserveSpotFragment extends Fragment implements Callbackable<Intege
         });
     }
 
+    /** (non-Javadoc)
+     * @see android.support.v4.app.Fragment#onCreateView(LayoutInflater, ViewGroup, Bundle)
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -145,6 +163,9 @@ public class ReserveSpotFragment extends Fragment implements Callbackable<Intege
         return rootView;
     }
 
+    /** (non-Javadoc)
+     * @see nl.rug.nc.bicycleclient.Callbackable#callback(Object)
+     */
     @Override
     public void callback(final Integer param) {
         this.getActivity().runOnUiThread(new Runnable() {

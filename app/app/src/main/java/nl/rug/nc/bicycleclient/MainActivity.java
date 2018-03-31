@@ -1,6 +1,7 @@
 package nl.rug.nc.bicycleclient;
 
 import android.os.Bundle;
+import android.os.PersistableBundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.Fragment;
@@ -9,6 +10,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.support.v4.app.FragmentManager;
 
+/**
+ * This is a top level interface that provides the App-wide navigation bar and contains the
+ * Home, Parking time checker and Reservation Fragments.
+ */
 public class MainActivity extends AppCompatActivity {
 
     private HomeFragment homeFragment = new HomeFragment();
@@ -35,6 +40,11 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    /**
+     * Opens up a given Fragment.
+     *
+     * @param fragment The Fragment that has to be displayed.
+     */
     private void openFragment(Fragment fragment) {
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction transaction = fragmentManager.beginTransaction();
@@ -42,6 +52,9 @@ public class MainActivity extends AppCompatActivity {
         transaction.commit();
     }
 
+    /** (non-Javadoc)
+     * @see android.support.v7.app.AppCompatActivity#onCreate(Bundle, PersistableBundle)
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

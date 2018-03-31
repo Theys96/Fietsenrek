@@ -11,12 +11,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
-
+/**
+ * This subclass of Fragment provides a home screen interface that contains buttons to the parking
+ * time checker and the reservation interface.
+ */
 public class HomeFragment extends Fragment {
 
     public HomeFragment() {
     }
 
+    /** (non-Javadoc)
+     * @see android.support.v4.app.Fragment#onCreateView(LayoutInflater, ViewGroup, Bundle)
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {

@@ -32,7 +32,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-
+/**
+ * This subclass of Fragment provides the user interface where the users can check the parking
+ * time of a bicycle in a certain slot of a certain bicycle stand.
+ */
 public class CheckBikeFragment extends Fragment {
 
     private View rootView;
@@ -47,6 +50,15 @@ public class CheckBikeFragment extends Fragment {
         // Required empty public constructor
     }
 
+    /**
+     * Validates whether a number is within the given limits.
+     *
+     * @param input The number that should be validated.
+     * @param min The minimal value of input.
+     * @param max The maximum value of input.
+     *
+     * @return True is input falls between the given limits, False otherwise.
+     */
     private boolean validateNumber(String input, int min, int max) {
         try {
             int inputInt = Integer.valueOf(input);
@@ -55,6 +67,12 @@ public class CheckBikeFragment extends Fragment {
         return false;
     }
 
+    /**
+     * Stores the data of all connected bicycle stands from the JSONArray.
+     * It updates the user interface depending on whether any connected bicycle stands were found.
+     *
+     * @param response A JSONArray that contains the bicycle stand data.
+     */
     private void jsonRequestCallback(JSONArray response) {
         rootView.findViewById(R.id.progressBar).setVisibility(rootView.GONE);
         sizeData.clear();
@@ -89,6 +107,12 @@ public class CheckBikeFragment extends Fragment {
         return String.format(" (Last checked %s ago)", DateUtils.formatElapsedTime((System.currentTimeMillis()-checkTime)/1000));
     }
 
+    /**
+     * Shows the user whether his requested slot is empty, reserved or filled.
+     * In case it is filled, it also shows for how long.
+     *
+     * @param slot The slot requested by the user
+     */
     private void showResult(final int slot) {
         this.getActivity().runOnUiThread(new Runnable() {
 
@@ -108,6 +132,9 @@ public class CheckBikeFragment extends Fragment {
         });
     }
 
+    /**
+     * Requests the data of all connected bicycle stands for the API.
+     */
     private void requestDataFromApi() {
         JsonArrayRequest arrayRequest = new JsonArrayRequest(String.format("http://%s:3000/list", getString(R.string.debug_ip)), new Response.Listener<JSONArray>() {
             @Override
@@ -126,6 +153,9 @@ public class CheckBikeFragment extends Fragment {
         jsonRequestQueue.add(arrayRequest);
     }
 
+    /**
+     * Sets action listeners for the 'Check Parking Time' button and the slot number input field.
+     */
     private void setListeners() {
         requestParkTime.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -152,6 +182,9 @@ public class CheckBikeFragment extends Fragment {
         });
     }
 
+    /** (non-Javadoc)
+     * @see android.support.v4.app.Fragment#onCreateView(LayoutInflater, ViewGroup, Bundle)
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
