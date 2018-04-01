@@ -155,6 +155,22 @@ public class StandData extends Observable {
 	}
 	
 	/**
+	 * Tries to reserve and lock the specified slot.
+	 * @param slot The slot to reserve
+	 * @return The unlock code on success, -1 if the slot could not be reserved.
+	 */
+	public int reserveSlot(int slot) {
+		int code = -1;
+		synchronized (data) {
+			if (getSlot(slot) == SlotState.EMPTY) {
+				setSlot(slot, SlotState.RESERVED);
+				code = lockSlot(slot);
+			}
+		}
+		return code;		
+	}
+	
+	/**
 	 * Returns the SlotState of a given slot
 	 * 
 	 * @param slot the slot number

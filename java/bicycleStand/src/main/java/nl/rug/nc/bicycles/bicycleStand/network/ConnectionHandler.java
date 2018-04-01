@@ -6,7 +6,6 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 import nl.rug.nc.bicycles.bicycleStand.model.StandData;
-import nl.rug.nc.bicycles.bicycleStand.model.StandData.SlotState;
 
 /**
  * Handles the generation a lock code for a slot number given by a client.
@@ -37,11 +36,7 @@ public class ConnectionHandler implements Runnable {
 			ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
 			ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
 			int slot = ois.readInt();
-			int code = -1;
-			if (model.getSlot(slot) == SlotState.EMPTY) {
-				model.setSlot(slot, SlotState.RESERVED);
-				code = model.lockSlot(slot);
-			}
+			int code = model.reserveSlot(slot);
 			oos.writeInt(code);
 			oos.close();
 			ois.close();
