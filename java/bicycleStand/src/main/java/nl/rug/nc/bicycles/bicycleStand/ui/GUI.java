@@ -68,6 +68,7 @@ public class GUI extends UI implements ActionListener, Observer {
 		bottomPanel.add(new JLabel("Set: "));
 		bottomPanel.add(toggleField);
 		bottomPanel.add(toggleButton);
+		totalField.addActionListener(this);
 		toggleField.addActionListener(this);
 		toggleButton.addActionListener(this);
 		guiFrame.getContentPane().add(bottomPanel, BorderLayout.SOUTH);
@@ -86,6 +87,19 @@ public class GUI extends UI implements ActionListener, Observer {
 			return (Integer.valueOf(toggleField.getText()) < Integer.valueOf(totalField.getText())
 					&& Integer.valueOf(toggleField.getText()) >= 0);
 		} catch (NumberFormatException e) {
+			return false;
+		}
+	}
+	
+	/**
+	 * Checks whether the total number of slots is a number higher than zero.
+	 * 
+	 * @return boolean result of the check.
+	 */
+	private boolean validateTotal() {
+		try {
+			return (Integer.valueOf(totalField.getText()) > 0);
+		} catch (NumberFormatException nfe) {
 			return false;
 		}
 	}
@@ -116,11 +130,7 @@ public class GUI extends UI implements ActionListener, Observer {
 	 */
 	@Override
 	public void actionPerformed(ActionEvent ae) {
-		if (!validateForm()) {
-			JOptionPane.showMessageDialog(guiFrame, "Invalid value", "Error: invalid value", JOptionPane.ERROR_MESSAGE);
-			return;
-		}
-		if (this.getModel()==null) {
+		if (this.getModel()==null && validateTotal()) {
 			String[] connectionInfo = showConnectionDialog();
 			if (connectionInfo==null) return;
 			int max = Integer.valueOf(totalField.getText());
@@ -132,6 +142,11 @@ public class GUI extends UI implements ActionListener, Observer {
 			nameField.setEnabled(false);
 			new Thread(new HeartbeatRunnable(this, connectionInfo)).start();
 			new Thread(new SocketHandler(this)).start();
+		}
+		if (ae.getSource()==totalField) return;
+		if (!validateForm()) {
+			JOptionPane.showMessageDialog(guiFrame, "Invalid value", "Error: invalid value", JOptionPane.ERROR_MESSAGE);
+			return;
 		}
 		int slot = Integer.valueOf(toggleField.getText());
 		if (getModel().isLocked(slot)) {
