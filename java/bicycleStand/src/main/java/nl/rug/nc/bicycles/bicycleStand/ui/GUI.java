@@ -130,7 +130,11 @@ public class GUI extends UI implements ActionListener, Observer {
 	 */
 	@Override
 	public void actionPerformed(ActionEvent ae) {
-		if (this.getModel()==null && validateTotal()) {
+		if (this.getModel()==null) {
+			if (!validateTotal()) {
+				JOptionPane.showMessageDialog(guiFrame, "Invalid total number of slots", "Invalid value", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
 			String[] connectionInfo = showConnectionDialog();
 			if (connectionInfo==null) return;
 			int max = Integer.valueOf(totalField.getText());
@@ -145,7 +149,7 @@ public class GUI extends UI implements ActionListener, Observer {
 		}
 		if (ae.getSource()==totalField) return;
 		if (!validateForm()) {
-			JOptionPane.showMessageDialog(guiFrame, "Invalid value", "Error: invalid value", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(guiFrame, "Invalid slot number", "Invalid value", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
 		int slot = Integer.valueOf(toggleField.getText());
