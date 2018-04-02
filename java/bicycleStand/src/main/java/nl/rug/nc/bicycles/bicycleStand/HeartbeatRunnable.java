@@ -27,7 +27,7 @@ public class HeartbeatRunnable implements Runnable {
 	private RecoverableConnection connection;
 	private String[] connectionInfo;
 	private boolean running = true;
-	private String ip = IpHelper.getExternalIP();
+	private String ip = IpHelper.getLikelyLocalIp(); //Use IpHelper.getExternalIP() in production!!!;
 	
 	public HeartbeatRunnable(UI ui, String[] connectionInfo) {
 		parent = ui;

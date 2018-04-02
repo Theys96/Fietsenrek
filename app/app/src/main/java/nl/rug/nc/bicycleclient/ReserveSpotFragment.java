@@ -121,7 +121,7 @@ public class ReserveSpotFragment extends Fragment implements Callbackable<Intege
                 int slot = Integer.valueOf(slotSpinner.getSelectedItem().toString())-1;
                 String ip = ipData.get(rackSpinner.getSelectedItem().toString());
 
-                new Thread(new SpotReserver(slot, getString(R.string.debug_ip), ReserveSpotFragment.this)).start();
+                new Thread(new SpotReserver(slot, ip, ReserveSpotFragment.this)).start();
             }
         });
         rackSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
