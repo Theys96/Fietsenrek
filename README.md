@@ -28,7 +28,7 @@ cd target
 chmod +x ./bicycleStand-0.0.1-SNAPSHOT-jar-with-dependencies.jar
 ```
 
-You can now run a rack by going into the target directory and running either `./bicycleStand-0.0.1-SNAPSHOT-jar-with-dependencies.jar` for a graphical interface, or `bicycleStand-0.0.1-SNAPSHOT-jar-with-dependencies.jar --cli` for a command line interface (recommended).
+You can now run a rack by going into the target directory and running either `./bicycleStand-0.0.1-SNAPSHOT-jar-with-dependencies.jar` for a graphical interface, or `./bicycleStand-0.0.1-SNAPSHOT-jar-with-dependencies.jar --cli` for a command line interface (recommended).
 
 #### Running the client (app)
 _Make sure that you have the android sdk installed, and that the environment variables are set correctly before continuing._
